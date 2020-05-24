@@ -36,3 +36,5 @@ yarn-error.log*
 
 .vercel
 .now
+.env.development
+.env.production
