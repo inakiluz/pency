@@ -1,16 +1,5 @@
 import React from "react";
-import {
-  Stack,
-  Box,
-  Icon,
-  PseudoBox,
-  Flex,
-  Text,
-  Button,
-  Badge,
-  useDisclosure,
-  Grid,
-} from "@chakra-ui/core";
+import {Stack, Box, PseudoBox, Flex, useDisclosure} from "@chakra-ui/core";
 
 import ProductCard from "../components/ProductCard";
 import {useFilteredProducts} from "../hooks";
@@ -22,24 +11,18 @@ import {groupBy} from "~/selectors/group";
 import CartDrawer from "~/cart/components/CartDrawer";
 import {filterBy} from "~/selectors/filter";
 import {useTenant} from "~/tenant/hooks";
-import TenantAvatar from "~/tenant/components/TenantAvatar";
-import SocialLinks from "~/ui/list/SocialLinks";
+import {useTranslation} from "~/hooks/translation";
+import CartTotalButton from "~/cart/components/CartTotalButton";
+import TenantHeader from "~/tenant/components/TenantHeader";
+import NoResults from "~/ui/feedback/NoResults";
+import Content from "~/ui/structure/Content";
 
 const ProductsScreen: React.FC = () => {
-  const {add, remove, count, total} = useCart();
+  const {add, remove, items, checkout} = useCart();
+  const t = useTranslation();
   const {isOpen: isCartOpen, onOpen: openCart, onClose: closeCart} = useDisclosure();
   const {products, filters} = useFilteredProducts({available: true});
-  const {
-    highlight,
-    facebook,
-    instagram,
-    twitter,
-    banner,
-    title,
-    logo,
-    phone,
-    description,
-  } = useTenant();
+  const {highlight, fields, ...tenant} = useTenant();
 
   const featuredProducts = filterBy(products, {featured: true});
   const productsByCategory = groupBy(products, (product) => product.category);
@@ -56,65 +39,8 @@ const ProductsScreen: React.FC = () => {
           overflowX="hidden"
           overflowY="auto"
         >
-          <Box
-            backgroundColor="primary.500"
-            backgroundImage={`url(${banner})`}
-            backgroundPosition="center"
-            backgroundRepeat="no-repeat"
-            backgroundSize="cover"
-            height={{base: 24, sm: 56}}
-            minHeight={{base: 24, sm: 56}}
-            width="100%"
-          />
+          <TenantHeader data-test-id="header" marginBottom={4} tenant={tenant} />
           <Box flex={1}>
-            <Box
-              data-test-id="header"
-              margin="auto"
-              marginBottom={4}
-              maxWidth={{base: "100%", xl: "6xl"}}
-              paddingX={4}
-              width="100%"
-            >
-              <Grid
-                gridTemplateAreas={{
-                  base: `"avatar links" "information information"`,
-                  sm: `"avatar information links"`,
-                }}
-                gridTemplateColumns={{
-                  base: `auto`,
-                  sm: `auto 1fr auto`,
-                }}
-              >
-                <TenantAvatar
-                  gridArea="avatar"
-                  logo={logo}
-                  marginRight={{base: 0, sm: 4}}
-                  marginTop={{base: -6, sm: -8}}
-                  title={title}
-                />
-                <Stack
-                  gridArea="information"
-                  marginTop={{base: 1, sm: 4}}
-                  spacing={{base: 0, sm: 1}}
-                >
-                  <Text fontSize={{base: "xl", sm: "3xl"}} fontWeight="bold" lineHeight="normal">
-                    {title}
-                  </Text>
-                  <Text color="gray.500" fontSize={{base: "sm", sm: "md"}} lineHeight="normal">
-                    {description}
-                  </Text>
-                </Stack>
-                <SocialLinks
-                  facebook={facebook}
-                  gridArea="links"
-                  instagram={instagram}
-                  justifyContent="flex-end"
-                  marginTop={4}
-                  twitter={twitter}
-                  whatsapp={phone}
-                />
-              </Grid>
-            </Box>
             {highlight && (
               <Box
                 backgroundColor="primary.50"
@@ -136,62 +62,38 @@ const ProductsScreen: React.FC = () => {
                 borderTopWidth={1}
                 data-test-id="filters"
               >
-                <Flex
-                  margin="auto"
-                  maxWidth={{base: "100%", xl: "6xl"}}
-                  paddingX={4}
-                  paddingY={1}
-                  width="100%"
-                >
+                <Content paddingX={4} paddingY={1}>
                   {filters}
-                </Flex>
+                </Content>
               </Flex>
             </Box>
-            <Stack margin="auto" spacing={5} width="100%">
-              {Boolean(products.length) ? (
-                <Stack
-                  margin="auto"
-                  maxWidth={{base: "100%", xl: "6xl"}}
-                  paddingX={4}
-                  spacing={{base: 5, sm: 10}}
-                  width="100%"
-                >
-                  {Boolean(featuredProducts.length) && (
-                    <Stack spacing={{base: 4, sm: 5}}>
-                      <Text fontSize={{base: "lg", sm: "2xl"}} fontWeight={500}>
-                        Destacados
-                      </Text>
-                      <ProductsCarousel zIndex={0}>
+            <Content paddingX={4}>
+              <Stack margin="auto" spacing={5} width="100%">
+                {Boolean(products.length) ? (
+                  <Stack spacing={{base: 5, sm: 10}} width="100%">
+                    {Boolean(featuredProducts.length) && (
+                      <ProductsCarousel title={t("common.featured")} zIndex={0}>
                         {featuredProducts.map((product) => (
                           <ProductCard
                             key={product.id}
                             isRaised
                             add={add}
-                            minWidth={{base: "60vw", sm: 280}}
+                            minWidth={280}
                             product={product}
                             remove={remove}
                           />
                         ))}
                       </ProductsCarousel>
-                    </Stack>
-                  )}
-                  {productsByCategory.map(([category, products]) => {
-                    return (
-                      <PseudoBox
-                        key={category}
-                        _last={{marginBottom: 4}}
-                        as="section"
-                        id={category}
-                      >
-                        <Stack spacing={{base: 4, sm: 5}}>
-                          <Text
-                            data-test-id="category-title"
-                            fontSize={{base: "lg", sm: "2xl"}}
-                            fontWeight={500}
-                          >
-                            {category}
-                          </Text>
-                          <ProductsGrid>
+                    )}
+                    {productsByCategory.map(([category, products]) => {
+                      return (
+                        <PseudoBox
+                          key={category}
+                          _last={{marginBottom: 4}}
+                          as="section"
+                          id={category}
+                        >
+                          <ProductsGrid data-test-id="category" title={category}>
                             {products.map((product) => (
                               <ProductCard
                                 key={product.id}
@@ -201,87 +103,39 @@ const ProductsScreen: React.FC = () => {
                               />
                             ))}
                           </ProductsGrid>
-                        </Stack>
-                      </PseudoBox>
-                    );
-                  })}
-                </Stack>
-              ) : (
-                <Flex
-                  alignItems="center"
-                  data-test-id="empty"
-                  direction="column"
-                  flex={1}
-                  justifyContent="center"
-                  marginTop={12}
-                  style={{marginBottom: 12}}
-                >
-                  <Icon
-                    color="gray.200"
-                    fontSize={{base: 64, sm: 96}}
-                    marginBottom={4}
-                    name="search"
-                  />
-                  <Text color="gray.300" fontSize={{base: "md", sm: "lg"}} textAlign="center">
-                    No se encontraron productos
-                  </Text>
-                </Flex>
-              )}
-              {Boolean(count) && (
-                <Flex
-                  as="nav"
-                  bottom={0}
-                  justifyContent="center"
-                  margin={{base: 0, sm: "auto"}}
-                  paddingBottom={4}
-                  paddingX={4}
-                  position="sticky"
-                  zIndex={2}
-                >
+                        </PseudoBox>
+                      );
+                    })}
+                  </Stack>
+                ) : (
+                  <NoResults data-test-id="empty">{t("products.empty")}</NoResults>
+                )}
+                {Boolean(items.length) && (
                   <Flex
-                    alignItems="center"
-                    boxShadow="0 0 6px currentColor"
-                    color="primary.500"
-                    display="block"
+                    as="nav"
+                    bottom={0}
                     justifyContent="center"
                     margin={{base: 0, sm: "auto"}}
-                    rounded={4}
-                    width={{base: "100%", sm: "auto"}}
+                    paddingBottom={4}
+                    position="sticky"
+                    zIndex={2}
                   >
-                    <Button
-                      backgroundColor="primary.500"
-                      color="white"
-                      display="flex"
-                      justifyContent="space-between"
-                      paddingLeft={2}
-                      paddingRight={3}
-                      variantColor="primary"
-                      width="100%"
-                      onClick={openCart}
-                    >
-                      <Stack isInline alignItems="center" flex={1} spacing={4}>
-                        <Badge
-                          backgroundColor="primary.700"
-                          color="primary.50"
-                          fontSize="sm"
-                          paddingX={2}
-                          paddingY={1}
-                          variantColor="primary"
-                        >
-                          {count}
-                        </Badge>
-                        <Text flex={1}>Revisar pedido</Text>
-                        <Text>${total}</Text>
-                      </Stack>
-                    </Button>
+                    <CartTotalButton items={items} onClick={openCart} />
                   </Flex>
-                </Flex>
-              )}
-            </Stack>
+                )}
+              </Stack>
+            </Content>
           </Box>
         </Flex>
       </Flex>
-      <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
+      <CartDrawer
+        fields={fields}
+        isOpen={isCartOpen}
+        items={items}
+        onCheckout={checkout}
+        onClose={closeCart}
+        onRemove={remove}
+      />
     </>
   );
 };
