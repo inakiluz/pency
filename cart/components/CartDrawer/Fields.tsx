@@ -1,54 +1,52 @@
 import React from "react";
-import {DrawerContent, DrawerBody, DrawerFooter, Stack, Divider} from "@chakra-ui/core";
+import {Stack} from "@chakra-ui/core";
 
 import FieldsForm from "../../forms/FieldsForm";
-import {CheckoutFields} from "../../types";
 
 import CheckoutButton from "./CheckoutButton";
-import Header from "./Header";
 
-import {Tenant} from "~/tenant/types";
+import {DrawerTitle, DrawerBody, DrawerFooter} from "~/ui/controls/Drawer";
+import {Field} from "~/tenant/types";
 import {useTranslation} from "~/hooks/translation";
 
 interface Props {
-  fields: Tenant["fields"];
-  onSubmit: (fields: CheckoutFields) => void;
-  onBack: VoidFunction;
+  fields: Field[];
+  onSubmit: (fields: Field[]) => void;
 }
 
-const Fields: React.FC<Props> = ({fields, onSubmit, onBack}) => {
+const Fields: React.FC<Props> = ({fields, onSubmit}) => {
+  const [isLoading, toggleLoading] = React.useState(false);
   const t = useTranslation();
 
-  const defaultValues: CheckoutFields = fields.reduce(
-    (values, field) => ({...values, [field.title]: ""}),
-    {},
-  );
+  function handleSubmit(event: React.MouseEvent, submit: () => Promise<void>) {
+    event.stopPropagation();
+
+    toggleLoading(true);
+
+    submit().finally(() => toggleLoading(false));
+  }
 
   return (
-    <DrawerContent>
-      <Header onBack={onBack}>{t("cart.completeOrder")}</Header>
-      <FieldsForm defaultValues={defaultValues} fields={fields} onSubmit={onSubmit}>
-        {({form, submit}) => (
-          <>
-            <DrawerBody overflowY="auto" padding={4}>
+    <FieldsForm defaultValues={fields} onSubmit={onSubmit}>
+      {({form, submit}) => (
+        <>
+          <DrawerBody overflowY="auto">
+            <Stack spacing={6}>
+              <DrawerTitle>{t("cart.completeOrder")}</DrawerTitle>
               {form}
-            </DrawerBody>
-            <DrawerFooter padding={4}>
-              <Stack spacing={4} width="100%">
-                <Divider />
-                <CheckoutButton
-                  onClick={(event) => {
-                    event.stopPropagation();
-
-                    submit();
-                  }}
-                />
-              </Stack>
-            </DrawerFooter>
-          </>
-        )}
-      </FieldsForm>
-    </DrawerContent>
+            </Stack>
+          </DrawerBody>
+          <DrawerFooter>
+            <Stack spacing={4} width="100%">
+              <CheckoutButton
+                isLoading={isLoading}
+                onClick={(event) => handleSubmit(event, submit)}
+              />
+            </Stack>
+          </DrawerFooter>
+        </>
+      )}
+    </FieldsForm>
   );
 };
 

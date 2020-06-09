@@ -1,20 +1,19 @@
 import React from "react";
 import {Avatar, AvatarProps} from "@chakra-ui/core";
 
-import {Tenant} from "../types";
+import {ClientTenant} from "../types";
 
 import Image from "~/ui/feedback/Image";
 
 interface Props extends Omit<AvatarProps, "onLoad" | "onError"> {
-  logo: Tenant["logo"];
-  title: Tenant["title"];
+  logo: ClientTenant["logo"];
+  title: ClientTenant["title"];
 }
 
 const TenantAvatar: React.FC<Props> = ({logo, title, ...props}) => {
   return logo ? (
     <Image
-      borderColor="gray.100"
-      borderWidth={2}
+      border="3px solid white"
       boxShadow="inset 0 0 2px rgba(0,0,0,0.2)"
       height={{base: 24, sm: 32}}
       minHeight={{base: 24, sm: 32}}
@@ -26,8 +25,8 @@ const TenantAvatar: React.FC<Props> = ({logo, title, ...props}) => {
     />
   ) : (
     <Avatar
-      borderColor="gray.100"
-      borderWidth={2}
+      borderColor="white"
+      borderWidth={3}
       boxShadow="sm"
       height={{base: 24, sm: 32}}
       minHeight={{base: 24, sm: 32}}

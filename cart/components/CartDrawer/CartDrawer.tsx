@@ -1,20 +1,20 @@
 import React from "react";
-import {DrawerOverlay, Drawer} from "@chakra-ui/core";
 
-import {CartItem, CheckoutFields} from "../../types";
+import {CartItem} from "../../types";
 import {getCount} from "../../selectors";
 
 import Overview from "./Overview";
 import Fields from "./Fields";
 
-import {Tenant} from "~/tenant/types";
+import Drawer, {DrawerHeader} from "~/ui/controls/Drawer";
+import {ClientTenant, Field} from "~/tenant/types";
 
 interface Props {
   isOpen: boolean;
   onClose: VoidFunction;
   items: CartItem[];
-  fields?: Tenant["fields"];
-  onCheckout: (fields?: CheckoutFields) => void;
+  fields?: ClientTenant["fields"];
+  onCheckout: (fields?: Field[]) => Promise<void>;
   onRemove: (id: string) => void;
 }
 
@@ -23,45 +23,54 @@ const CartDrawer: React.FC<Props> = ({items, fields, onRemove, onCheckout, isOpe
   const count = getCount(items);
   const hasNextStep = Boolean(fields?.length);
 
-  function handleClose() {
+  const handleClose = React.useCallback(() => {
     onClose();
-  }
+    handleReset();
+  }, [onClose]);
 
-  function handleNext() {
-    setStep("fields");
+  function handleReset() {
+    setStep("overview");
   }
 
   function handlePrevious() {
     setStep("overview");
   }
 
-  function handleCheckoutWithoutFields() {
-    onCheckout();
+  async function handleNext() {
+    return setStep("fields");
   }
 
-  function handleCheckoutWithFields(fields: CheckoutFields) {
-    onCheckout(fields);
+  async function handleCheckoutWithoutFields() {
+    return onCheckout();
+  }
+
+  async function handleCheckoutWithFields(fields: Field[]) {
+    return onCheckout(fields);
   }
 
   React.useEffect(() => {
-    if (!count) onClose();
-  }, [count, onClose]);
+    if (!count) handleClose();
+  }, [count, handleClose]);
 
   return (
-    <Drawer id="cart" isOpen={isOpen} placement="right" size="md" onClose={handleClose}>
-      <DrawerOverlay />
+    <Drawer
+      id="cart"
+      isOpen={isOpen}
+      placement="right"
+      size="md"
+      onAnimationEnd={handleReset}
+      onClose={handleClose}
+    >
+      <DrawerHeader onBack={step === "fields" && handlePrevious} onClose={handleClose} />
       {step === "overview" && (
         <Overview
           hasNextStep={hasNextStep}
           items={items}
-          onBack={handleClose}
           onRemove={onRemove}
           onSubmit={hasNextStep ? handleNext : handleCheckoutWithoutFields}
         />
       )}
-      {step === "fields" && (
-        <Fields fields={fields} onBack={handlePrevious} onSubmit={handleCheckoutWithFields} />
-      )}
+      {step === "fields" && <Fields fields={fields} onSubmit={handleCheckoutWithFields} />}
     </Drawer>
   );
 };

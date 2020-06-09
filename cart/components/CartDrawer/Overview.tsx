@@ -1,21 +1,12 @@
 import React from "react";
-import {
-  Stack,
-  Flex,
-  Text,
-  IconButton,
-  DrawerContent,
-  DrawerBody,
-  DrawerFooter,
-  Divider,
-  Button,
-} from "@chakra-ui/core";
+import {Stack, Flex, Text, IconButton} from "@chakra-ui/core";
 
 import {CartItem} from "../../types";
 
 import CheckoutButton from "./CheckoutButton";
-import Header from "./Header";
 
+import {DrawerTitle, DrawerBody, DrawerFooter} from "~/ui/controls/Drawer";
+import Button from "~/ui/controls/Button";
 import Badge from "~/ui/feedback/Badge";
 import {useTranslation} from "~/hooks/translation";
 import {getCount, getTotal} from "~/cart/selectors";
@@ -23,60 +14,71 @@ import {getCount, getTotal} from "~/cart/selectors";
 interface Props {
   items: CartItem[];
   onRemove: (id: string) => void;
-  onBack: VoidFunction;
-  onSubmit: VoidFunction;
+  onSubmit: () => Promise<void>;
   hasNextStep: boolean;
 }
 
-const Overview: React.FC<Props> = ({items, onRemove, onSubmit, onBack, hasNextStep}) => {
+const Overview: React.FC<Props> = ({items, onRemove, onSubmit, hasNextStep}) => {
+  const [isLoading, toggleLoading] = React.useState(false);
   const t = useTranslation();
   const count = getCount(items);
   const total = getTotal(items);
 
+  function handleSubmit() {
+    toggleLoading(true);
+
+    onSubmit().finally(() => toggleLoading(false));
+  }
+
+  function handleNext() {
+    onSubmit();
+  }
+
   return (
-    <DrawerContent>
-      <Header onBack={onBack}>
-        {t("cart.yourCart")} ({count})
-      </Header>
-      <DrawerBody overflowY="auto" padding={4}>
+    <>
+      <DrawerBody>
         <Stack spacing={6}>
-          {items.map(({id, title, options, price, count}) => (
-            <Flex key={id} alignItems="center" justifyContent="space-between">
-              <Flex alignItems="center" mr={2}>
-                <IconButton
-                  isRound
-                  aria-label="Borrar elemento"
-                  fontSize="12px"
-                  height={6}
-                  icon="minus"
-                  minWidth={6}
-                  mr={4}
-                  variantColor="red"
-                  width={6}
-                  onClick={() => onRemove(id)}
-                />
-                <Flex direction="column">
-                  <Flex alignItems="center">
-                    <Text>{title}</Text>
-                    <Badge count={count} marginLeft={2} variantColor="primary" />
+          <DrawerTitle>
+            {t("cart.yourCart")} ({count})
+          </DrawerTitle>
+          <Stack spacing={6}>
+            {items.map(({id, title, options, price, count}) => (
+              <Flex key={id} alignItems="flex-start" justifyContent="space-between">
+                <Flex alignItems="center" mr={2}>
+                  <IconButton
+                    isRound
+                    aria-label="Borrar elemento"
+                    fontSize="12px"
+                    height={6}
+                    icon="minus"
+                    minWidth={6}
+                    mr={4}
+                    variantColor="red"
+                    width={6}
+                    onClick={() => onRemove(id)}
+                  />
+                  <Flex direction="column">
+                    <Flex alignItems="center">
+                      <Text>{title}</Text>
+                      <Badge count={count} marginLeft={2} variantColor="primary" />
+                    </Flex>
+                    {options && (
+                      <Text color="gray.500" fontSize="sm">
+                        {options}
+                      </Text>
+                    )}
                   </Flex>
-                  {options && (
-                    <Text color="gray.500" fontSize="sm">
-                      {options}
-                    </Text>
-                  )}
+                </Flex>
+                <Flex alignItems="center">
+                  <Text>${price * count}</Text>
                 </Flex>
               </Flex>
-              <Flex alignItems="center">
-                <Text>${price * count}</Text>
-              </Flex>
-            </Flex>
-          ))}
+            ))}
+          </Stack>
         </Stack>
       </DrawerBody>
-      <DrawerFooter padding={4}>
+      <DrawerFooter>
         <Stack spacing={4} width="100%">
-          <Divider />
           <Flex alignItems="center" justifyContent="flex-end">
             <Text fontSize="lg" fontWeight="600" mr={2}>
               {t("common.total")}:
@@ -84,15 +86,15 @@ const Overview: React.FC<Props> = ({items, onRemove, onSubmit, onBack, hasNextSt
             <Text fontSize="lg">${total}</Text>
           </Flex>
           {hasNextStep ? (
-            <Button variantColor="primary" onClick={onSubmit}>
+            <Button boxShadow="lg" size="lg" variantColor="primary" onClick={handleNext}>
               {t("common.next")}
             </Button>
           ) : (
-            <CheckoutButton onClick={onSubmit} />
+            <CheckoutButton isLoading={isLoading} onClick={handleSubmit} />
           )}
         </Stack>
       </DrawerFooter>
-    </DrawerContent>
+    </>
   );
 };
 

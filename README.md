@@ -1,5 +1,5 @@
 # Pency
-Tu tienda online
+Tu tienda online, fácil.
 
 ## Qué es?
 Pency es una tienda online multipropósito, pensada para quienes venden (o quieren vender) via WhatsApp.
@@ -14,7 +14,7 @@ Pency es una tienda online multipropósito, pensada para quienes venden (o quier
 * Configuración de la tienda (color, título, descripción, imagen, logo, etc)
 
 ## Algo no me anda!
-Podés crear un `issue` acá en GitHub
+Podés crear un `issue` acá en GitHub.
 
 ## Quiero ayudar!
 Entrá a los `issues` acá en GitHub
@@ -43,7 +43,6 @@ npm start
 > Necesitás tener un .env.[ambiente].local para cada ambiente en el que vas a correr la app.
 
 ## ¿Cómo correr Storybook?
-
 Storybook nos permite observar los distintos componentes visuales utilizados en el proyecto en un ambiente aislado.
 
 Ejecutá en la consola los siguientes comandos para abrir Storybook:

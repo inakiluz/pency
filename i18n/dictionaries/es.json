@@ -10,11 +10,14 @@
     "add": "Agregar",
     "goBack": "Volver",
     "help": "Ayuda",
+    "home": "Inicio",
     "exit": "Salir",
     "products": "Productos",
     "shop": "Tienda",
     "options": "Opciones",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "item": "Item",
+    "item_plural": "Items"
   },
   "form": {
     "required": "Este campo es requerido",
@@ -34,7 +37,7 @@
   },
   "products": {
     "empty": "No se encontraron productos",
-    "check": "Revisar pedido"
+    "review": "Tu pedido"
   },
   "auth": {
     "resetPasswordForm": {
